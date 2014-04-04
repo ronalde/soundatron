@@ -21,6 +21,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+debian/soundatron/
+
 
 # Installer logs
 pip-log.txt
