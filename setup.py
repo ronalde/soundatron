@@ -6,5 +6,5 @@ setup(
     author='Ryan Small',
     author_email='ryan@foundatron.com',
     license='LICENSE',
-    decription='A configure a bit perfect mpd server',
+    decription='A Setup a bit perfect mpd server',
 )
