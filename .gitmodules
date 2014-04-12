@@ -1,0 +1,3 @@
+[submodule "app/configure/mpdconfigure"]
+	path = app/configure/mpdconfigure
+	url = https://github.com/ronalde/mpd-configure
