@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 from flask import flash
-import settings
+import settings as s
 import subprocess
 
 
@@ -15,7 +15,7 @@ class MpdConfigure(object):
         Take user input settings and create mpd-configure conf file
         """
         if settings is not None:
-            configfile = "%s/mpd-configure.conf" % settings.MPDCONFIGURE
+            configfile = "%s/mpd-configure.conf" % s.MPDCONFIGURE
             f = open(configfile, 'w')
             for key, value in settings.iteritems():
                 f.write("%s=%s\n" % (key, value))
@@ -30,7 +30,7 @@ class MpdConfigure(object):
         Apply settings in mpd-configure conf file"
         """
         flash(file)
-        subprocess.call('%s/mpd-configure' % settings.MPDCONFIGURE)
+        subprocess.call('%s/mpd-configure' % s.MPDCONFIGURE)
         flash('mpd configured. restart and cross your fingers')
         #TODO: Add some error control
 
