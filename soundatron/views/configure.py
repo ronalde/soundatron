@@ -1,8 +1,9 @@
-from flask import render_template, flash
-from . import configure
+# -*- encoding:utf-8 -*-
+from flask import Blueprint, render_template, flash
 from .forms import WizardSettings
 from .mpdconfigure import MpdConfigure
 
+configure = Blueprint('configure', __name__)
 mpd = MpdConfigure()
 
 
@@ -10,7 +11,7 @@ mpd = MpdConfigure()
 def wizard_apply():
     form = WizardSettings()
     if form.validate_on_submit():
-        settings = {'DEBUG': 'True'}
+        settings = {'DEBUG': 'True', 'DRYRUN': 'True'}
         settings['prefferedfilter'] = form.prefferedfilter.data
         settings['enablezeroconf'] = form.enablezeroconf.data
         settings['zeroconfname'] = form.zeroconfname.data

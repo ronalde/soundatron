@@ -1,24 +1,14 @@
-#!/usr/bin/env python
-import os
-from app import create_app
-from flask.ext.script import Manager, Shell
+#!/usr/bin/env python2
+# -*- encoding:utf-8 -*-
 
-app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+from flask import Flask
+from flaskext.actions import Manager
+import settings
+from soundatron import app
+
+app.config.from_object(settings)
 manager = Manager(app)
 
-
-def make_shell_context():
-    return dict(app=app)
-manager.add_command("shell", Shell(make_context=make_shell_context))
-
-
-@manager.command
-def test():
-    """Run the unit tests."""
-    import unittest
-    tests = unittest.TestLoader().discover('tests')
-    unittest.TextTestRunner(verbosity=2).run(tests)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     manager.run()
+
