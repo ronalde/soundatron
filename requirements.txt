@@ -2,6 +2,7 @@ Flask==0.10.1
 Flask-Actions==0.6.6
 Flask-Bootstrap==3.1.1.2
 Flask-WTF==0.9.5
+gunicorn==18.0
 Jinja2==2.7.2
 MarkupSafe==0.19
 WTForms==1.0.5
