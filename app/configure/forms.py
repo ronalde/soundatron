@@ -4,7 +4,7 @@ from wtforms import StringField, BooleanField, SubmitField
 from wtforms.validators import Length
 
 
-class WizardSettings(Form):
+class WizardForm(Form):
 
     musicdir = StringField('Music Directory', default='/var/lib/mpd/music', )
     prefferedfilter = StringField('Type filter', default='USB Audio')
