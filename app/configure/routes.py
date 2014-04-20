@@ -15,10 +15,10 @@ def index():
 def wizard_apply():
     form = WizardForm()
     if form.validate_on_submit():
-        settings = {'DEBUG': 'True', 'DRYRUN': 'True'}
-        settings['prefferedfilter'] = form.prefferedfilter.data
-        settings['enablezeroconf'] = form.enablezeroconf.data
-        settings['zeroconfname'] = form.zeroconfname.data
+        settings = {'DEBUG': 'True'}
+        settings['MPD_MUSICDIR'] = form.musicdir.data
+        settings['ENABLE_ZEROCONF'] = 1
+        settings['ZEROCONF_NAME'] = form.zeroconfname.data
         flash(settings)
         mc.apply(settings)
         return redirect(url_for('configure.index'))

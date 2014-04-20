@@ -15,7 +15,8 @@ class MpdConfigure(object):
         """
 
         if settings is not None:
-            configfile = "%s/mpd-configure.conf" % current_app.config['MPDCONFIGURE']
+            configfile = "%s/mpd-configure.conf" % \
+                current_app.config['MPDCONFIGURE']
             f = open(configfile, 'w')
             for key, value in settings.iteritems():
                 f.write("%s=%s\n" % (key, value))
