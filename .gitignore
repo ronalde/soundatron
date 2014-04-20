@@ -54,3 +54,10 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# Mac OS stuff
+*.DS_Store
+
+# SublimeText Stuff
+*.sublime-project
+*.sublime-workspace

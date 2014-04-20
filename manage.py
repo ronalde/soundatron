@@ -1,12 +1,11 @@
 #!/usr/bin/env python2
 # -*- encoding:utf-8 -*-
-
+import os
 from flask import Flask
 from flaskext.actions import Manager
-import settings
-from soundatron import app
+from app import create_app
 
-app.config.from_object(settings)
+app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)
 
 if __name__ == "__main__":
