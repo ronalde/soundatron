@@ -35,7 +35,15 @@ class MpdConfigure(object):
         flash('mpd configured. restart and cross your fingers')
         #TODO: Add some error control
 
+    def stopmpd(self):
+        subprocess.call(["service", "mpd", "stop"])
+
+    def startmpd(self):
+        subprocess.call(["service", "mpd", "start"])
+
     def apply(self, settings):
+        self.stopmpd
         s = settings
         configfile = self.configfile(s)
         self.run_mpdconfigure(configfile)
+        self.startmpd
