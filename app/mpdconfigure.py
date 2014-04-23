@@ -36,14 +36,15 @@ class MpdConfigure(object):
         #TODO: Add some error control
 
     def stopmpd(self):
+        # This doesn't work ... no permisions
         subprocess.call(["service", "mpd", "stop"])
 
     def startmpd(self):
+        # This doesn't work ... no permisions
+
         subprocess.call(["service", "mpd", "start"])
 
     def apply(self, settings):
-        self.stopmpd
         s = settings
         configfile = self.configfile(s)
         self.run_mpdconfigure(configfile)
-        self.startmpd
