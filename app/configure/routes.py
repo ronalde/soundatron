@@ -14,7 +14,6 @@ def wizard_apply():
     form = WizardForm()
     if form.validate_on_submit():
         settings = {'DRYRUN': 'True'}
-        import ipdb; ipdb.set_trace()
         settings['MPD_CONFFILE'] = form.mpdconfpath.data
         settings['MPD_MUSICDIR'] = form.musicdir.data
         settings['LIMIT_INTERFACE_FILTER'] = form.interface.data
