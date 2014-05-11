@@ -3,6 +3,7 @@ from flask import Flask
 from config import config
 from flask.ext.bootstrap import Bootstrap
 
+
 bootstrap = Bootstrap()
 
 
