@@ -60,7 +60,7 @@ def createconfs(settingsdict):
     f = open(mpdconfigureconf, 'w')
     f.write('DEBUG=True\n')
     for key, value in settings.iteritems():
-        f.write('{0}="{0}"\n'.format(key, value))
+        f.write('{0}="{1}"\n'.format(key, value))
     f.close()
 
     # Create mpd.conf
