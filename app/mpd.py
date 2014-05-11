@@ -1,11 +1,13 @@
 # -*- encoding:utf-8 -*-
 from subprocess import Popen, PIPE, STDOUT
 from signal import signal, SIGPIPE, SIG_DFL
+from flask import current_app as app
 import subprocess
 import os
 import re
 import psutil
 import shlex
+
 
 
 def availableinterfaces():
@@ -47,22 +49,23 @@ def createconfs(settingsdict):
     Create mpd-configure.conf and mpd.conf file from a dictionary of
     settings used by mpd-configure. See https://github.com/ronalde/mpd-configure
     """
-    
-    __scriptdir = os.path.join('scripts', 'mpd-configure')
-    mpdconfigure = os.path.join(__scriptdir, 'mpd-configure')
-    mpdconfigconf = os.path.join(__scriptdir, 'mpd-configure.conf')
-    mpdconf = os.path.join(__scriptdir, 'mpd.conf.tmp')
+    mpdconfiguredir = app.config['MPDCONFIGURE']
+    mpdconfigure = os.path.join(mpdconfiguredir, 'mpd-configure')
+    mpdconfigureconf = os.path.join(mpdconfiguredir, 'mpd-configure.conf')
+    mpdconf = os.path.join(mpdconfiguredir, 'mpd.conf')
     settings = settingsdict
-
     settings['MPD_CONFFILE'] = mpdconf
 
-    f = open(mpdconfigconf, 'w')
+    # Write settings to mpd-configure.conf
+    f = open(mpdconfigureconf, 'w')
+    f.write('DEBUG=True\n')
     for key, value in settings.iteritems():
-        f.write("%s=%s\n" % (key, value))
+        f.write('{0}="{0}"\n'.format(key, value))
     f.close()
-    f = open(mpdconf, 'w')
-    f.write(Popen(mpdconfigure).communicate()[0])
-    f.close()
+
+    # Create mpd.conf
+    Popen(mpdconfigure)
+
     return mpdconf
 
 

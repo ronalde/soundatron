@@ -13,7 +13,7 @@ def index():
 def wizard_apply():
     form = WizardForm()
     if form.validate_on_submit():
-        settings = {'DEBUG': 'True'}
+        settings = {}
         settings['MPD_MUSICDIR'] = form.musicdir.data
         settings['LIMIT_INTERFACE_FILTER'] = form.interface.data
         settings['LIMIT_INTERFACE_TYPE'] = form.interfacetype.data
