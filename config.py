@@ -29,4 +29,3 @@ config = {
 
     'default': DevelopmentConfig
 }
-
