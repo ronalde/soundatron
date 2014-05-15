@@ -73,7 +73,7 @@ def applympdconf(settings, password):
     """
     copy mpd.conf to /etc/mpd.conf and restart mpd server
     """
-    creatempdconfigureconf()
+    creatempdconfigureconf(settings)
     conffile = creatempdconf()
     Popen(['sudo', '-K'])
     runsudocmd('/etc/init.d/mpd stop', password)
