@@ -1,6 +1,7 @@
 # -*- encoding:utf-8 -*-
 from subprocess import Popen, PIPE, STDOUT, check_output
 from signal import signal, SIGPIPE, SIG_DFL
+from flask import current_app as app
 import os
 import psutil
 import shlex
@@ -39,42 +40,49 @@ def pidofmpd():
         return False
 
 
-def createconfs(settingsdict):
+def creatempdconfigureconf(settingsdict):
     """
-    Create mpd-configure.conf and mpd.conf file from a dictionary of
-    settings used by mpd-configure. See https://github.com/ronalde/mpd-configure
+    Create mpd-configure.conf. See https://github.com/ronalde/mpd-configure
     """
-    mpdconfigure = os.path.join('scripts', 'mpd-configure', 'mpd-configure')
-    mpdconfigureconf = os.path.join('scripts', 'mpd-configure',
-                                    'mpd-configure.conf')
-    mpdconf = os.path.join('scripts', 'mpd-configure', 'mpd.conf')
+    mpdconfiguredir = app.config['MPDCONFIGURE']
+    mpdconfigureconf = os.path.join(mpdconfiguredir, 'mpd-configure.conf')
+    mpdconf = os.path.join(mpdconfiguredir, 'mpd.conf')
     settings = settingsdict
-    settings['MPD_CONFFILE'] = mpdconf
-
-    # Write settings to mpd-configure.conf
+    settings['MPD_CONFFILE'] = '"{0}"'.format(mpdconf)
     f = open(mpdconfigureconf, 'w')
-    f.write('DEBUG=True\n')
+    f.write('G_ZEROCONF_ZEROCONFENABLED=True\n')
     for key, value in settings.iteritems():
-        f.write('{0}="{1}"\n'.format(key, value))
+        f.write('{0}={1}\n'.format(key, value))
     f.close()
 
-    # Create mpd.conf
-    Popen(mpdconfigure)
 
-    return mpdconf
+def creatempdconf():
+    mpdconfiguredir = app.config['MPDCONFIGURE']
+    mpdconfigure = os.path.join(mpdconfiguredir, 'mpd-configure')
+    output = os.path.join(mpdconfiguredir, 'mpd.conf')
+
+    proc = Popen(mpdconfigure, stdout=PIPE, stderr=None)
+    mpdconf = proc.communicate()[0]
+    f = open(output, 'w')
+    f.write(mpdconf)
+    f.close()
+    return output
 
 
 def applympdconf(settings, password):
     """
     copy mpd.conf to /etc/mpd.conf and restart mpd server
     """
-    conffile = createconfs(settings)
+    creatempdconfigureconf()
+    conffile = creatempdconf()
     Popen(['sudo', '-K'])
     runsudocmd('/etc/init.d/mpd stop', password)
+
     pid = pidofmpd()
     if pid:
         killmpdcmd = 'kill -9 {0}'.format(pid)
         runsudocmd(killmpdcmd, password)
+
     copycmd = 'cp {0} /etc/mpd.conf'.format(conffile)
     runsudocmd(copycmd, password)
     runsudocmd('/etc/init.d/mpd start', password)

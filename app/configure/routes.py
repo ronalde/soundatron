@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, redirect, url_for
 from . import configure
 from .forms import WizardForm
 from .mpd import applympdconf, availableinterfaces
@@ -15,11 +15,10 @@ def wizard_apply():
     form.interface.choices = [(i[0], i[1]) for i in availableinterfaces()]
     if form.validate_on_submit():
         settings = {}
-        settings['MPD_MUSICDIR'] = form.musicdir.data
-        settings['LIMIT_INTERFACE_FILTER'] = form.interface.data
-        settings['LIMIT_INTERFACE_TYPE'] = form.interfacetype.data
+        settings['LIMIT_INTERFACE_FILTER'] = '"{0}"'.format(form.interface.data)
+        settings['CONF_MPD_MUSICDIR'] = '"{0}"'.format(form.musicdir.data)
+        settings['G_ZEROCONF_ZEROCONFNAME'] = '"{0}"'.format(form.zeroconfname.data)
         password = form.password.data
-        flash(settings)
         applympdconf(settings, password)
         return redirect(url_for('configure.index'))
 
