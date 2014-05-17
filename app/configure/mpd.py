@@ -40,23 +40,33 @@ def pidofmpd():
         return False
 
 
-def creatempdconfigureconf(settingsdict):
+
+
+def creatempdconfigureconf(settings):
     """
     Create mpd-configure.conf. See https://github.com/ronalde/mpd-configure
     """
-    mpdconfiguredir = app.config['MPDCONFIGURE']
-    mpdconfigureconf = os.path.join(mpdconfiguredir, 'mpd-configure.conf')
-    mpdconf = os.path.join(mpdconfiguredir, 'mpd.conf')
-    settings = settingsdict
-    settings['MPD_CONFFILE'] = '"{0}"'.format(mpdconf)
+    mpdpath = app.config['MPDPATH']
+    mpdconfigureconf = os.path.join(app.config['MPDCONFIGURE'], 'mpd-configure.conf')
+    s = settings
+    s['G_ZEROCONF_ZEROCONFENABLED'] = 'True'
+    s['G_PATHS_DBFILE'] = '"{0}/tag_cache"'.format(mpdpath)
+    s['G_PATHS_LOGFILE'] = '"{0}/mpd.log"'.format(mpdpath)
+    s['G_PATHS_PLAYLISTDIRECTORY'] = '"{0}/playlists"'.format(mpdpath)
+    s['G_PATHS_PIDFILE'] = '"{0}/pid"'.format(mpdpath)
+    s['G_PATHS_STATEFILE'] = '"{0}/state"'.format(mpdpath)
+    s['G_PATHS_STICKERFILE'] = '"{0}/sticker.sql"'.format(mpdpath)
+
     f = open(mpdconfigureconf, 'w')
-    f.write('G_ZEROCONF_ZEROCONFENABLED=True\n')
-    for key, value in settings.iteritems():
+
+    #write user input items
+    for key, value in s.iteritems():
         f.write('{0}={1}\n'.format(key, value))
     f.close()
 
 
 def creatempdconf():
+
     mpdconfiguredir = app.config['MPDCONFIGURE']
     mpdconfigure = os.path.join(mpdconfiguredir, 'mpd-configure')
     output = os.path.join(mpdconfiguredir, 'mpd.conf')
@@ -77,7 +87,6 @@ def applympdconf(settings, password):
     conffile = creatempdconf()
     Popen(['sudo', '-K'])
     runsudocmd('/etc/init.d/mpd stop', password)
-
     pid = pidofmpd()
     if pid:
         killmpdcmd = 'kill -9 {0}'.format(pid)

@@ -16,7 +16,7 @@ def wizard_apply():
     if form.validate_on_submit():
         settings = {}
         settings['LIMIT_INTERFACE_FILTER'] = '"{0}"'.format(form.interface.data)
-        settings['CONF_MPD_MUSICDIR'] = '"{0}"'.format(form.musicdir.data)
+        settings['G_PATHS_MUSICDIRECTORY'] = '"{0}"'.format(form.musicdir.data)
         settings['G_ZEROCONF_ZEROCONFNAME'] = '"{0}"'.format(form.zeroconfname.data)
         password = form.password.data
         applympdconf(settings, password)
