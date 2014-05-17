@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, flash
 from . import configure
 from .forms import WizardForm
 from .mpd import applympdconf, availableinterfaces
@@ -6,7 +6,7 @@ from .mpd import applympdconf, availableinterfaces
 
 @configure.route('/')
 def index():
-    return render_template('configure/index.html')
+    return redirect(url_for('configure.wizard_apply'))
 
 
 @configure.route('/wizard/', methods=['GET', 'POST'])
@@ -20,6 +20,7 @@ def wizard_apply():
         settings['G_ZEROCONF_ZEROCONFNAME'] = '"{0}"'.format(form.zeroconfname.data)
         password = form.password.data
         applympdconf(settings, password)
-        return redirect(url_for('configure.index'))
+        flash("Music server configured")
+        return redirect(url_for('configure.wizard_apply'))
 
     return render_template('configure/wizard.html', form=form)
