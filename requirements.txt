@@ -7,8 +7,6 @@ MarkupSafe==0.19
 WTForms==1.0.5
 Werkzeug==0.9.4
 argparse==1.2.1
-ipdb==0.8
-ipython==2.0.0
 itsdangerous==0.24
 psutil==2.1.1
 wsgiref==0.1.2
