@@ -8,7 +8,7 @@ setup(
     packages=['app'],
     license='LICENSE',
     description='Setup a bit perfect mpd server',
-    long_description=open('README.rst').read(),
+    long_description=open('README.md').read(),
     install_requires=[
         "Flask >=0.10.1",
         "Flask-Actions >=0.6.6",
