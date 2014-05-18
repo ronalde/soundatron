@@ -8,6 +8,9 @@ Soundatron has been tested on the following device OS combos:
 1. Raspberry PI - [Raspian](http://www.raspberrypi.org/downloads/)
 1. And my laptop, a Lenovo E220s - Ubuntu 13.10
 
+Soundatron works because [mpd-configure](https://github.com/ronalde/mpd-configure) works. Check it out.
+
+
 ## What does Soundatron do?
 Not much! and that's the way we like it. 
 
@@ -19,6 +22,8 @@ Soundatron does two things:
 * Zeroconf Name
 
 2. It creates and applies a new mpd.conf with settings that enable your device to be a bit perfect music server.
+
+![screenshot](https://raw.githubusercontent.com/foundatron/soundatron/master/soundatron.png)
 
 ## What it isn't...
 1. It isn't a MPD client. You will stell need one those to use your server. [Link](http://www.musicpd.org/clients/)
