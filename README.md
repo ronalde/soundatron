@@ -44,7 +44,7 @@ curl -Lo- https://bit.ly/soundatron-bootstrap | bash
 Oh god! What did that just do? The bootstrap script...
 
 1. Installs MPD, Alsa and related dependencies
-2. Clones the Soundatron, and Mpd-configure repos
+2. Clones the Soundatron, and Mpd-Configure repos
 3. Creates a virtualenv
 4. Installs the python dependencies from the requirements.txt.
 
@@ -85,21 +85,21 @@ Want to all that by hand? Here you go, step by step.
     ```
 5. Create and enter a python virtualenv for Soundatron
 
-```bash
-virtualenv soundatron_env
-source soundatron_env/bin/activate
-````
+   ```bash
+   virtualenv soundatron_env
+   source soundatron_env/bin/activate
+   ````
 
 6. Install the python requirements
 
-```bash
-pip install -r requirements
-```
+   ```bash
+   pip install -r requirements
+   ```
 
 7. Start Soundatron
 
-```bash
-python manage.py runserver -h 0.0.0.0 
-```
+   ```bash
+   python manage.py runserver -h 0.0.0.0 
+   ```
 
 8. In a browser navigate to that computer's ip address, and the specified port.
