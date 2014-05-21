@@ -17,9 +17,9 @@ Not much! and that's the way we like it.
 Soundatron does two things:
 
 1. It allows you to configure a small subset of MPD settings.
-* Sound device
-* Music directory
-* Zeroconf Name
+  * Sound device
+  * Music directory
+  * Zeroconf Name
 
 2. It creates and applies a new mpd.conf with settings that enable your device to be a bit perfect music server.
 
