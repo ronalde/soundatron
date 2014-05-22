@@ -101,7 +101,7 @@ Want to all that by hand? Here you go, step by step.
    pip install -r requirements
    ```
 
-7. Start Soundatron
+7. Start Soundatron 
 
    ```bash
    python manage.py runserver -h 0.0.0.0 
