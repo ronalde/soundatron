@@ -29,10 +29,16 @@ dir_virtualenv="sound_env"
 ## do not change below this
 projectname="soundatron"
 git_url="https://github.com/foundatron/${projectname}.git"
-git_submodule="mpd-configure"
+git_mpdconfigure="mpd-configure"
+git_pacapt="pacapt"
 
 path_gitrepo=${dir_build}/${projectname}
 path_virtualenv=${dir_build}/${dir_virtualenv}
+
+path_scripts="$(dirname $0)/scripts"
+pacapt_path="${path_scripts}/pacapt/pacapt"
+cmd_updatepackageslist="${pacapt_path} -Sy"
+cmd_install="${pacapt_path} -S"
 
 packageslist_updated=""
 
@@ -59,52 +65,6 @@ function install_package()  {
     ## ref: https://wiki.archlinux.org/index.php/Pacman_Rosetta
 
     package="$1"
-
-    ## TODO: test emerge yum and zypper
-    if [[ -z "${cmd_install}" ]]; then
-	inform_inline "checking the package manager ... "
-	installers="apt-get pacman emerge zypper yum"
-	while IFS=" " read -r -d ' ' line; do
-	    cmd_install=$(which ${line})
-	    if [[ $? -eq 0 ]]; then
-		installer="${line}"
-		inform_done
-		break
-	    fi
-	    done<<<"${installers}"
-	
-
-	case ${installer} in
-	    
-	    apt-get)
-		cmd_updatepackageslist="apt-get update"
-		cmd_install="${cmd_install} install"
-		;;
-	    
-	    pacman)
-		cmd_updatepackageslist="pacman -Sy"
-		cmd_install="${cmd_install} -S"
-		;;
-	    
-	    emerge)
-		cmd_updatepackageslist="layman -f"
-		cmd_install="${cmd_install}"
-		;;
-	    yum)
-		cmd_updatepackageslist="yum clean expire-cache && yum check-update"
-		cmd_install="${cmd_install} install"
-		;;
-	    zypper)
-		cmd_updatepackageslist="zypper refresh"
-		cmd_install="${cmd_install} install"
-		;;
-	    
-	    *)
-		die "none found; please install \`${package}\` manually and rerun this script."
-		;;
-	esac
-
-    fi
 
     ## update packageslist if needed
     if [[ ! -z ${packageslist_updated} ]]; then
@@ -158,6 +118,31 @@ function command_not_found() {
     fi
 }
 
+function init_update_gitsubmodule() {
+    ## git init submodule $1 and update it
+
+    ## initialize the git submodule
+    git_submodule="${1}"
+    inform_inline " - initializing git submodule \`${git_submodule}\` ... "
+    res=$(cd ${path_gitrepo} && \
+	${cmd_git} submodule init ${git_submodule} &>/dev/null) 
+    if [[ $? -ne 0 ]]; then
+	die "\`${res}\`"
+    else 
+	inform_done
+    fi 
+    
+    ## update the git submodule
+    inform_inline " - updating git submodule \`${git_submodule}\` ..."
+    res=$(cd ${path_gitrepo} && \
+	${cmd_git} submodule update ${git_submodule} &>/dev/null)
+    if [[ $? -ne 0 ]]; then
+	die "\`${res}\`"
+    else
+	inform_done
+    fi 
+
+}
 
 inform "starting $0 ..."
 
@@ -189,15 +174,19 @@ if [[ ${EUID} -ne 0 ]];
     res="$(${cmd_sudo} ls) &>/dev/null"
 fi
 
+## aplay is needed for mpd-configure, we might as well check its presense now
+cmd_aplay=$(which aplay || command_not_found "aplay" "alsa-utils")
 
 ## TODO: mpd is not needed locally when it runs on a different host?
 cmd_mpd=$(which mpd || command_not_found "mpd" "mpd")
 [[ $? -ne 0 ]] && exit 1;
 
+## TODO: catch 22: no git > no pacapt
 cmd_git=$(which git || command_not_found "git" "git")
 [[ $? -ne 0 ]] && exit 1;
 
-cmd_virtualenv=$(which virtualenv || command_not_found "virtualenv" "python-virtualenv")
+cmd_virtualenv=$(which virtualenv || \
+    command_not_found "virtualenv" "python-virtualenv")
 [[ $? -ne 0 ]] && exit 1;
 
 ## clone soundatron git repo
@@ -209,23 +198,11 @@ else
     inform_done
 fi
 
-## initialize git submodule
-inform_inline " - initializing git submodule \`${git_submodule}\` ... "
-res=$(cd ${path_gitrepo} && ${cmd_git} submodule init &>/dev/null) 
-if [[ $? -ne 0 ]]; then
-    die "\`${res}\`"
-else 
-    inform_done
-fi 
+## initialize the mpd-configure git submodule
+init_update_gitsubmodule "${git_mpdconfigure}"
+## initialize the pacapt git submodule
+init_update_gitsubmodule "${git_pacapt}"
 
-## update the submodule
-inform_inline " - updating git submodule \`${git_submodule}\` ..."
-res=$(cd ${path_gitrepo} && ${cmd_git} submodule update &>/dev/null)
-if [[ $? -ne 0 ]]; then
-    die "\`${res}\`"
-else
-    inform_done
-fi 
 
 ## create python virtualenv
 inform_inline " - creating python virtualenv \`${dir_virtualenv}\` ... " 
