@@ -79,7 +79,7 @@ function install_package()  {
 
     ## install the package
     inform_inline " - installing package using \`${cmd_install} ${package}\` ... "
-    if [[ ${EUID} -ne 0 ]];
+    if [[ ${EUID} -ne 0 ]]; then
 	## user is not root; use sudo
 	res=$(${cmd_sudo} ${cmd_install} ${package} &>/dev/null)
     else
@@ -141,7 +141,7 @@ fi
 ## check for necessary commands and handle approriately
 
 ## check if user is root
-if [[ ${EUID} -ne 0 ]];
+if [[ ${EUID} -ne 0 ]]; then
     ## user isn't root, check for sudo
     cmd_sudo=$(which sudo || die "this script assumes you have sudo")
     ## activate sudo in session
