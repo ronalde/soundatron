@@ -30,15 +30,14 @@ dir_virtualenv="sound_env"
 projectname="soundatron"
 git_url="https://github.com/foundatron/${projectname}.git"
 git_mpdconfigure="mpd-configure"
-git_pacapt="pacapt"
 
 path_gitrepo=${dir_build}/${projectname}
 path_virtualenv=${dir_build}/${dir_virtualenv}
 
 path_scripts="$(dirname $0)/scripts"
-pacapt_path="${path_scripts}/pacapt/pacapt"
-cmd_updatepackageslist="${pacapt_path} -Sy"
-cmd_install="${pacapt_path} -S"
+pacapt_script="${path_scripts}/pacapt/pacapt"
+cmd_updatepackageslist="${pacapt_script} -Sy"
+cmd_install="${pacapt_script} -S"
 
 packageslist_updated=""
 
@@ -118,31 +117,6 @@ function command_not_found() {
     fi
 }
 
-function init_update_gitsubmodule() {
-    ## git init submodule $1 and update it
-
-    ## initialize the git submodule
-    git_submodule="${1}"
-    inform_inline " - initializing git submodule \`${git_submodule}\` ... "
-    res=$(cd ${path_gitrepo} && \
-	${cmd_git} submodule init ${git_submodule} &>/dev/null) 
-    if [[ $? -ne 0 ]]; then
-	die "\`${res}\`"
-    else 
-	inform_done
-    fi 
-    
-    ## update the git submodule
-    inform_inline " - updating git submodule \`${git_submodule}\` ..."
-    res=$(cd ${path_gitrepo} && \
-	${cmd_git} submodule update ${git_submodule} &>/dev/null)
-    if [[ $? -ne 0 ]]; then
-	die "\`${res}\`"
-    else
-	inform_done
-    fi 
-
-}
 
 inform "starting $0 ..."
 
@@ -181,7 +155,6 @@ cmd_aplay=$(which aplay || command_not_found "aplay" "alsa-utils")
 cmd_mpd=$(which mpd || command_not_found "mpd" "mpd")
 [[ $? -ne 0 ]] && exit 1;
 
-## TODO: catch 22: no git > no pacapt (in case git submodule is used).
 cmd_git=$(which git || command_not_found "git" "git")
 [[ $? -ne 0 ]] && exit 1;
 
@@ -199,9 +172,25 @@ else
 fi
 
 ## initialize the mpd-configure git submodule
-init_update_gitsubmodule "${git_mpdconfigure}"
-## initialize the pacapt git submodule
-init_update_gitsubmodule "${git_pacapt}"
+git_submodule="${git_mpdconfigure}"
+inform_inline " - initializing git submodule \`${git_submodule}\` ... "
+res=$(cd ${path_gitrepo} && \
+    ${cmd_git} submodule init ${git_submodule} &>/dev/null) 
+if [[ $? -ne 0 ]]; then
+    die "\`${res}\`"
+else 
+    inform_done
+fi 
+
+## update the git submodule
+inform_inline " - updating git submodule \`${git_submodule}\` ..."
+res=$(cd ${path_gitrepo} && \
+    ${cmd_git} submodule update ${git_submodule} &>/dev/null)
+if [[ $? -ne 0 ]]; then
+    die "\`${res}\`"
+else
+    inform_done
+fi 
 
 
 ## create python virtualenv
