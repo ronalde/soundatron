@@ -210,9 +210,7 @@ fi
 git_submodule="${git_mpdconfigure}"
 inform_inline " - initializing git submodule \`${git_submodule}\` ... "
 res=$(cd ${path_scripts} && \
-    ${cmd_git} submodule init ${git_submodule}) 
-#res=$(cd ${path_gitrepo} && \
-#    ${cmd_git} submodule init ${git_submodule} &>/dev/null) 
+    ${cmd_git} submodule init ${git_submodule} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else 
@@ -231,7 +229,7 @@ fi
 
 ## create python virtualenv
 inform_inline " - creating python virtualenv \`${path_virtualenv}\` ... " 
-res=$(${cmd_virtualenv} ${path_virtualenv} &>/dev/null)
+res=$(${cmd_virtualenv} ${path_virtualenv})
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else
@@ -251,7 +249,7 @@ fi
 ## install python packages in virtualenv based on requirements in git repo
 cmd_pip=${path_virtualenv}/bin/pip
 file_requirements=${path_gitrepo}/requirements.txt
-inform_inline " - installing \`${file_requirements}\` in virtualenv \`${path_virtualenv}\` using pip ... "
+inform_inline " - installing \`${file_requirements}\` in virtualenv using pip ... "
 res=$(${cmd_pip} install -r ${file_requirements} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
@@ -259,10 +257,11 @@ else
     inform_done
 fi
 
-inform " * all done, summary:"
-inform "   - git repository stored in   : \`${path_gitrepo}\`."
-inform "   - web framework installed in : \`${path_virtualenv}\`."
-inform "   - to start the web application run the following commands:" 
+inform "all done:"
+inform " * git repository stored in   : \`${path_gitrepo}\`."
+inform " * web framework installed in : \`${path_virtualenv}\`."
+inform " * to start the web application run the following commands:"
+inform ""
 inform "cd ${path_gitrepo} &&  
 source ${path_virtualenv}/bin/activate && 
 python manage.py runserver -h 0.0.0.0"
