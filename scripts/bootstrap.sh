@@ -22,7 +22,7 @@
 
 ## user adaptable paths 
 ## root directory to store the virtualenv and git repository in
-dir_build=$(mktemp -d)
+dir_build=$(mktemp --tmpdir ${TMPDIR} -d "soundatron.XXX")
 ## directory name to store the python virtualenv
 dir_virtualenv="sound_env"
 
@@ -34,18 +34,17 @@ git_url="${1:-https://github.com/foundatron/${projectname}.git}"
 git_branch="${2}"
 git_mpdconfigure="mpd-configure"
 
-url_pacapt="https://github.com/icy/pacapt/raw/ng/pacapt"
-
 path_gitrepo=${dir_build}/${projectname}
 path_virtualenv=${dir_build}/${dir_virtualenv}
 
 path_scripts=${path_gitrepo}/scripts
 path_pacapt=${dir_build}/pacapt
-pacapt_script="${path_pacapt}/pacapt"
-cmd_updatepackageslist="${pacapt_script} -Sy"
-cmd_install="${pacapt_script} -S"
+url_pacapt="https://github.com/icy/pacapt/raw/ng/pacapt"
+script_pacapt="${path_pacapt}/pacapt"
+cmd_updatepackageslist="${script_pacapt} -Sy"
+cmd_install="${script_pacapt} -S"
 
-packageslist_updated=""
+pacapt_installed=""
 
 function die() {
     printf "error: %s.\n" "$@" 1>&2; 
@@ -65,23 +64,40 @@ function inform_done() {
     printf "done.\n" 1>&2; 
 }
 
+function install_pacapt() {
+
+    inform_inline " - creating pacapt directory \`${path_pacapt}\` ... "
+    res=$(mkdir -p ${path_pacapt})
+    [[ $? -ne 0 ]] && \
+	die "\`${res}\`" || \
+	inform_done
+
+    inform_inline " - downloading pacapt to \`${path_pacapt}\` ... "
+    res=$(wget -q -O ${script_pacapt} "${url_pacapt}" && \
+	chmod 755 ${script_pacapt})
+    [[ $? -ne 0 ]] && \
+	die "\`${res}\`" || \
+	inform_done
+
+    pacapt_installed=True
+
+}
+
 function install_package()  {
     ## install package $1
     ## ref: https://wiki.archlinux.org/index.php/Pacman_Rosetta
 
     package="$1"
 
-    ## update packageslist if needed
-    if [[ ! -z ${packageslist_updated} ]]; then
-	inform_inline "updating packages list using \`${cmd_updatepackageslist}\` ... "
+    ## install pacapt and update the list with available packages if needed
+    if [[ -z ${pacapt_installed} ]]; then
+	install_pacapt
+	inform_inline " - updating the packages list ... "
 	res=$(${cmd_updatepackageslist})
-	if [[ $? -ne 0 ]]; then
-	    die "\`${res}\`"
-	else
+	[[ $? -ne 0 ]] && \
+	    die "\`${res}\`" || \
 	    inform_done
-	    packageslist_updated=True
-	fi 
-    fi 
+    fi
 
     ## install the package
     inform_inline " - installing package using \`${cmd_install} ${package}\` ... "
@@ -135,19 +151,6 @@ if [[ ! -d ${dir_build} ]]; then
 	inform_done
 fi 
 
-inform_inline " - creating pacapt directory \`${path_pacapt}\` ... "
-res=$(mkdir -p ${path_pacapt})
-[[ $? -ne 0 ]] && \
-    die "\`${res}\`" || \
-    inform_done
-
-inform_inline " - downloading pacapt to \`${path_pacapt}\` ... "
-res=$(wget -q -O ${pacapt_script} "${url_pacapt}" && \
-    chmod 755 ${pacapt_script})
-[[ $? -ne 0 ]] && \
-    die "\`${res}\`" || \
-    inform_done
-
 ## exit if directories already exist
 if [[ -d ${path_gitrepo} ]]; then
     die "target directory \`${path_gitrepo}\` for git repository already exists"
@@ -200,7 +203,7 @@ if [[ ! -z "${git_branch}" ]]; then
     else
 	inform_done
     fi
-fi 
+fi
 
 
 ## initialize the mpd-configure git submodule
@@ -214,7 +217,7 @@ if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else 
     inform_done
-fi 
+fi
 
 ## update the git submodule
 inform_inline " - updating git submodule \`${git_submodule}\` ..."
@@ -224,32 +227,31 @@ if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else
     inform_done
-fi 
-
+fi
 
 ## create python virtualenv
-inform_inline " - creating python virtualenv \`${dir_virtualenv}\` ... " 
-res=$(${cmd_virtualenv} ${dir_virtualenv} &>/dev/null)
+inform_inline " - creating python virtualenv \`${path_virtualenv}\` ... " 
+res=$(${cmd_virtualenv} ${path_virtualenv} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else
     inform_done
-fi 
+fi
 
 ## activate the virtualenv by sourcing its activate script
-cmd_activate=${dir_virtualenv}/bin/activate
+cmd_activate=${path_virtualenv}/bin/activate
 inform_inline " - activating it by sourcing \`${cmd_activate}\` ... "
 res=$(source ${cmd_activate})
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else
     inform_done
-fi 
+fi
 
 ## install python packages in virtualenv based on requirements in git repo
-cmd_pip=${dir_virtualenv}/bin/pip
-file_requirements=${projectname}/requirements.txt
-inform_inline " - installing \`${file_requirements}\` in virtualenv \`${dir_virtualenv}\` using pip ... "
+cmd_pip=${path_virtualenv}/bin/pip
+file_requirements=${path_gitrepo}/requirements.txt
+inform_inline " - installing \`${file_requirements}\` in virtualenv \`${path_virtualenv}\` using pip ... "
 res=$(${cmd_pip} install -r ${file_requirements} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
