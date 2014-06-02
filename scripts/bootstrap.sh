@@ -73,11 +73,22 @@ function install_pacapt() {
 	inform_done
 
     inform_inline " - downloading pacapt to \`${path_pacapt}\` ... "
-    res=$(wget -q -O ${script_pacapt} "${url_pacapt}" && \
-	chmod 755 ${script_pacapt})
+    cmd_wget=$(which wget)
+    if [[ $? -eq 0 ]]; then
+	res=$(${cmd_wget} -q -O ${script_pacapt} "${url_pacapt}")
+    else
+	cmd_curl=$(which curl)
+	if [[ $? -ne 0 ]]; then
+	    res=$(${cmd_curl} -o ${script_pacapt} "${url_pacapt}")
+	fi
+    fi
+
     [[ $? -ne 0 ]] && \
-	die "\`${res}\`" || \
-	inform_done
+	die "neither wget nor curl found."
+    ## set it to executable
+    chmod 0755 ${script_pacapt} && \
+	inform_done || \
+	die "could not set \`${script_pacapt}\` to executable"
 
     pacapt_installed=True
 
@@ -93,7 +104,11 @@ function install_package()  {
     if [[ -z ${pacapt_installed} ]]; then
 	install_pacapt
 	inform_inline " - updating the packages list ... "
-	res=$(${cmd_updatepackageslist})
+	if [[ ${EUID} -ne 0 ]]; then
+	    res=$(${cmd_sudo} ${cmd_updatepackageslist})
+	else
+	    res=$(${cmd_updatepackageslist})
+	fi
 	[[ $? -ne 0 ]] && \
 	    die "\`${res}\`" || \
 	    inform_done
@@ -128,7 +143,7 @@ function command_not_found() {
     
     ## check if that worked
     inform_inline " - rechecking for \`${cmd}\` ... "
-    cmd=$(which cmd)
+    cmd=$(which ${cmd})
 
     if [[ $? -ne 0 ]]; then
 	## command still does not exist, exit with error
