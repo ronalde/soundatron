@@ -45,6 +45,7 @@ cmd_updatepackageslist="${script_pacapt} -Sy"
 cmd_install="${script_pacapt} -S"
 
 pacapt_installed=""
+is_sudo=""
 
 function die() {
     printf "error: %s.\n" "$@" 1>&2; 
@@ -100,6 +101,15 @@ function install_package()  {
 
     package="$1"
 
+    ## check if user is root
+    if [[ ${EUID} -ne 0 ]]; then
+	## user isn't root, check for sudo
+	cmd_sudo=$(which sudo || die "this script assumes you have sudo")
+	## activate sudo in session
+	[[ -z ${is_sudo} ]] && \
+	    ( res="$(${cmd_sudo} ls) &>/dev/null" && is_sudo=True )
+    fi
+
     ## install pacapt and update the list with available packages if needed
     if [[ -z ${pacapt_installed} ]]; then
 	install_pacapt
@@ -149,8 +159,7 @@ function command_not_found() {
 	## command still does not exist, exit with error
 	die "still not present"
     else
-	## return the command (with path)
-	printf "${cmd}"
+	inform_done
     fi
 }
 
@@ -176,14 +185,6 @@ if [[ -d ${path_virtualenv} ]]; then
 fi
 
 ## check for necessary commands and handle approriately
-
-## check if user is root
-if [[ ${EUID} -ne 0 ]]; then
-    ## user isn't root, check for sudo
-    cmd_sudo=$(which sudo || die "this script assumes you have sudo")
-    ## activate sudo in session
-    res="$(${cmd_sudo} ls) &>/dev/null"
-fi
 
 ## aplay is needed for mpd-configure, we might as well check its presense now
 cmd_aplay=$(which aplay || command_not_found "aplay" "alsa-utils")
