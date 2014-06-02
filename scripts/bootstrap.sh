@@ -22,20 +22,26 @@
 
 ## user adaptable paths 
 ## root directory to store the virtualenv and git repository in
-dir_build=$(pwd)
+dir_build=$(mktemp -d)
 ## directory name to store the python virtualenv
 dir_virtualenv="sound_env"
 
 ## do not change below this
 projectname="soundatron"
-git_url="https://github.com/foundatron/${projectname}.git"
+## git default url may be overridden as first argument on command line
+git_url="${1:-https://github.com/foundatron/${projectname}.git}"
+## git branch may be specified as second argument (together with git_url)
+git_branch="${2}"
 git_mpdconfigure="mpd-configure"
+
+url_pacapt="https://github.com/icy/pacapt/raw/ng/pacapt"
 
 path_gitrepo=${dir_build}/${projectname}
 path_virtualenv=${dir_build}/${dir_virtualenv}
 
-path_scripts="$(dirname $0)/scripts"
-pacapt_script="${path_scripts}/pacapt/pacapt"
+path_scripts=${path_gitrepo}/scripts
+path_pacapt=${dir_build}/pacapt
+pacapt_script="${path_pacapt}/pacapt"
 cmd_updatepackageslist="${pacapt_script} -Sy"
 cmd_install="${pacapt_script} -S"
 
@@ -122,12 +128,25 @@ inform "starting $0 ..."
 
 ## create the output directory if it does not exit
 if [[ ! -d ${dir_build} ]]; then
-    inform "creating output directory \`${dir_build}\` ... "
+    inform_inline " - creating output directory \`${dir_build}\` ... "
     res=$(mkdir -p ${dir_build})
     [[ $? -ne 0 ]] && \
 	die "\`${res}\`" || \
 	inform_done
 fi 
+
+inform_inline " - creating pacapt directory \`${path_pacapt}\` ... "
+res=$(mkdir -p ${path_pacapt})
+[[ $? -ne 0 ]] && \
+    die "\`${res}\`" || \
+    inform_done
+
+inform_inline " - downloading pacapt to \`${path_pacapt}\` ... "
+res=$(wget -q -O ${pacapt_script} "${url_pacapt}" && \
+    chmod 755 ${pacapt_script})
+[[ $? -ne 0 ]] && \
+    die "\`${res}\`" || \
+    inform_done
 
 ## exit if directories already exist
 if [[ -d ${path_gitrepo} ]]; then
@@ -150,6 +169,7 @@ fi
 
 ## aplay is needed for mpd-configure, we might as well check its presense now
 cmd_aplay=$(which aplay || command_not_found "aplay" "alsa-utils")
+[[ $? -ne 0 ]] && exit 1;
 
 ## TODO: mpd is not needed locally when it runs on a different host?
 cmd_mpd=$(which mpd || command_not_found "mpd" "mpd")
@@ -164,18 +184,32 @@ cmd_virtualenv=$(which virtualenv || \
 
 ## clone soundatron git repo
 inform_inline " - cloning git repository \`${projectname}\` in \`${path_gitrepo}\` ... "
-res=$(${cmd_git} clone ${git_url} &>/dev/null)
+res=$(cd ${dir_build} && ${cmd_git} clone ${git_url} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else
     inform_done
 fi
 
+## switch to the desired branch
+if [[ ! -z "${git_branch}" ]]; then
+    inform_inline " - switching to branch \`${git_branch}\` ... "
+    res=$(cd ${path_gitrepo} && ${cmd_git} checkout ${git_branch} &>/dev/null)
+    if [[ $? -ne 0 ]]; then
+	die "\`${res}\`"
+    else
+	inform_done
+    fi
+fi 
+
+
 ## initialize the mpd-configure git submodule
 git_submodule="${git_mpdconfigure}"
 inform_inline " - initializing git submodule \`${git_submodule}\` ... "
-res=$(cd ${path_gitrepo} && \
-    ${cmd_git} submodule init ${git_submodule} &>/dev/null) 
+res=$(cd ${path_scripts} && \
+    ${cmd_git} submodule init ${git_submodule}) 
+#res=$(cd ${path_gitrepo} && \
+#    ${cmd_git} submodule init ${git_submodule} &>/dev/null) 
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
 else 
@@ -184,7 +218,7 @@ fi
 
 ## update the git submodule
 inform_inline " - updating git submodule \`${git_submodule}\` ..."
-res=$(cd ${path_gitrepo} && \
+res=$(cd ${path_scripts} && \
     ${cmd_git} submodule update ${git_submodule} &>/dev/null)
 if [[ $? -ne 0 ]]; then
     die "\`${res}\`"
