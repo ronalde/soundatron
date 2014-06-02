@@ -181,7 +181,7 @@ cmd_aplay=$(which aplay || command_not_found "aplay" "alsa-utils")
 cmd_mpd=$(which mpd || command_not_found "mpd" "mpd")
 [[ $? -ne 0 ]] && exit 1;
 
-## TODO: catch 22: no git > no pacapt
+## TODO: catch 22: no git > no pacapt (in case git submodule is used).
 cmd_git=$(which git || command_not_found "git" "git")
 [[ $? -ne 0 ]] && exit 1;
 
